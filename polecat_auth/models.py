@@ -13,3 +13,4 @@ class User(model.Model):
 
 class JWTType(model.Type):
     token = model.TextField()
+    user = model.RelatedField(User)  # TODO: Omit reverse relationships

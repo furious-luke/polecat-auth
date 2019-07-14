@@ -2,6 +2,7 @@ from polecat import model
 from polecat.auth import jwt
 from polecat.model.db import Q
 
+from .exceptions import AuthError
 from .models import JWTType, User
 
 __all__ = ('AuthenticateInput', 'Authenticate')
@@ -21,11 +22,15 @@ class Authenticate(model.Mutation):
 
     def resolve(self, email, password):
         result = (
-            Q(User)
+            Q(User, session=self.session)
             .filter(email=email, password=password)
-            .select('id')
-            .get()
         )
+        if self.selector and 'user' in self.selector.lookups:
+            result = result.select(self.selector.lookups.get('user'))
+        result = result.get()
+        if not result:
+            raise AuthError('Invalid email/password')
         return {
-            'token': jwt({'userId': result['id']})
+            'token': jwt({'user_id': result['id']}),
+            'user': result
         }
