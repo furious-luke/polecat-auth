@@ -6,6 +6,9 @@ from polecat.db.schema import column
 class Migration(migration.Migration):
     dependencies = []
     operations = [
+        operation.CreateRole('admin', parents=[]),
+        operation.CreateRole('user', parents=['admin']),
+        operation.CreateRole('default', parents=['user']),
         operation.CreateTable(
             'auth_user',
             columns=[

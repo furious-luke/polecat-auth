@@ -22,7 +22,7 @@ class Authenticate(model.Mutation):
 
     def resolve(self, email, password):
         result = (
-            Q(User, session=self.session)
+            Q(User)
             .filter(email=email, password=password)
         )
         if self.selector and 'user' in self.selector.lookups:
@@ -31,6 +31,6 @@ class Authenticate(model.Mutation):
         if not result:
             raise AuthError('Invalid email/password')
         return {
-            'token': jwt({'user_id': result['id']}),
+            'token': jwt({'user_id': result['id'], 'role': 'user'}),
             'user': result
         }
