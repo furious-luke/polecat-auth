@@ -29,17 +29,26 @@ class CreateUser(Command):
                 .get()
             )['id']
             if organisation is not None:
-                org_id = (
+                org = (
                     Q(Organisation)
                     .insert_if_missing({'name': organisation})
-                    .select('id')
+                    .select('id', 'entity')
                     .get()
-                )['id']
+                )
+                if not org['entity']:
+                    (
+                        Q(Organisation)
+                        .filter(id=org['id'])
+                        .update(entity=Q(Entity).insert())
+                        .execute()
+                    )
+                # TODO: Update "active" to be a query against other actives.
                 (
                     Q(Membership)
                     .insert(
                         user=user_id,
-                        organisation=org_id
+                        organisation=org['id'],
+                        active=True
                     )
                     .execute()
                 )

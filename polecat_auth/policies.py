@@ -9,7 +9,7 @@ class OrganisationMemberPolicy(Policy):
             ' INNER JOIN auth_membership mem ON mem.user = usr.id'
             ' INNER JOIN auth_organisation org ON org.id = mem.organisation'
             " WHERE usr.entity = current_setting('claims.entity_id', TRUE)::int"
-            ' AND {} = mem.organisation'
+            ' AND {} = org.entity'
             ')'
         ).format(column_name)
         super().__init__(column_name, expr)

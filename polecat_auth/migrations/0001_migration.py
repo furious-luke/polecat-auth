@@ -44,8 +44,10 @@ class Migration(migration.Migration):
                 column.SerialColumn('id', unique=True, null=False, primary_key=True),
                 column.RelatedColumn('user', unique=False, null=False, primary_key=False, related_table='auth_user', related_column='memberships'),
                 column.RelatedColumn('organisation', unique=False, null=False, primary_key=False, related_table='auth_organisation', related_column='memberships'),
-                column.TextColumn('role', unique=False, null=True, primary_key=False)
+                column.TextColumn('role', unique=False, null=True, primary_key=False),
+                column.BoolColumn('active', unique=False, null=True, primary_key=False, default=False)
             ],
+            uniques=(('user', 'organisation', 'role'),),
             policies=[policy.Policy(name='auth_membership_user', expression="auth_membership.user = current_setting('claims.user_id', TRUE)::int")]
         ),
         operation.CreateTable(

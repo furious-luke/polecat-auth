@@ -43,8 +43,10 @@ class Membership(model.Model):
     user = model.RelatedField(User, null=False, related_name='memberships')
     organisation = model.RelatedField(Organisation, null=False, related_name='memberships')
     role = model.TextField()
+    active = model.BoolField(default=False)
 
     class Meta:
+        # TODO: How to unique only one active per user? Check?
         uniques = (
             ('user', 'organisation', 'role'),
         )
