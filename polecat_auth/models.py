@@ -15,13 +15,13 @@ class Entity(model.Model):
 
 
 class User(model.Model):
-    name = model.TextField()
-    email = model.EmailField(unique=True)
-    password = model.PasswordField(omit=omit.ALL)
-    logged_out = model.DatetimeField(omit=omit.ALL)
+    name = model.TextField(null=True)
+    email = model.EmailField(null=True, unique=True)
+    password = model.PasswordField(null=True, omit=omit.ALL)
+    logged_out = model.DatetimeField(null=True, omit=omit.ALL)
     created = model.DatetimeField(default=model.Auto)
     anonymous = model.BoolField(default=False)
-    entity = model.RelatedField(Entity, related_name='users')  # TODO: One-to-one
+    entity = model.RelatedField(Entity, related_name='users', null=True)  # TODO: One-to-one
 
     class Meta:
         policies = (
@@ -31,7 +31,7 @@ class User(model.Model):
 
 class Organisation(model.Model):
     name = model.TextField()
-    entity = model.RelatedField(Entity, related_name='organisations')  # TODO: One-to-one
+    entity = model.RelatedField(Entity, related_name='organisations', null=True)  # TODO: One-to-one
 
     class Meta:
         policies = (
@@ -40,9 +40,9 @@ class Organisation(model.Model):
 
 
 class Membership(model.Model):
-    user = model.RelatedField(User, null=False, related_name='memberships')
-    organisation = model.RelatedField(Organisation, null=False, related_name='memberships')
-    role = model.TextField()
+    user = model.RelatedField(User, related_name='memberships')
+    organisation = model.RelatedField(Organisation, related_name='memberships')
+    role = model.TextField(null=True)
     active = model.BoolField(default=False)
 
     class Meta:
@@ -56,10 +56,10 @@ class Membership(model.Model):
 
 
 class APIToken(model.Model):
-    purpose = model.TextField()
+    purpose = model.TextField(null=True)
 
 
 class JWTType(model.Type):
     token = model.TextField()
-    user = model.RelatedField(User)  # TODO: Omit reverse relationships
-    organisation = model.RelatedField(Organisation)  # TODO: Omit reverse relationships
+    user = model.RelatedField(User, null=True)  # TODO: Omit reverse relationships
+    organisation = model.RelatedField(Organisation, null=True)  # TODO: Omit reverse relationships
