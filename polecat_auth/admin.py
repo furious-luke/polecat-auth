@@ -10,12 +10,12 @@ class CreateUser(Command):
     def get_params(self):
         return (
             self.Argument(('email',)),
-            self.Argument(('password',)),
+            self.Option(('--password',)),
             self.Option(('--name',)),
             self.Option(('--organisation',))
         )
 
-    def run(self, email, password, name=None, organisation=None):
+    def run(self, email, password=None, name=None, organisation=None):
         with transaction():
             user_id = (
                 Q(User)

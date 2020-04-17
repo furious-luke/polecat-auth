@@ -70,7 +70,7 @@ class RefreshAnonymousUser(model.Mutation):
         if not token:
             token = jwt({
                 'user_id': user['id'],
-                'entity_id': user['entity']['id'],
+                'entity_id': (user['entity'] or {}).get('id'),
                 'role': 'default'
             })
         return {
