@@ -3,7 +3,7 @@ from polecat.auth import jwt, jwt_decode
 from polecat.model.db import Q, S
 
 from .exceptions import AuthError
-from .models import JWTType, User
+from .models import JWTType, User, Entity
 
 __all__ = ('AuthenticateInput', 'Authenticate', 'RefreshAnonymousUser')
 
@@ -62,10 +62,19 @@ class RefreshAnonymousUser(model.Mutation):
             query = Q(User).filter(id=claims['user_id'])
         except Exception:
             # TODO: Check more.
-            query = Q(User).insert(anonymous=True)
+            # TODO: These should be composable, but the nested select
+            # from Polecat doesn't seem to be working as expected.
+            entity_id = Q(Entity).insert().select('id').get()['id']
+            query = (
+                Q(User)
+                .insert(
+                    entity=entity_id,
+                    anonymous=True
+                )
+            )
             token = None
         if ctx.selector and 'user' in ctx.selector.lookups:
-            query = query.select(ctx.selector.lookups.get('user'), entity=S('id'))
+            query = query.select(S(entity=S('id')).merge(ctx.selector.lookups.get('user')))
         user = query.get()
         if not token:
             token = jwt({
