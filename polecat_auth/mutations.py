@@ -4,6 +4,7 @@ from polecat.model.db import Q, S
 
 from .exceptions import AuthError
 from .models import JWTType, User, Entity
+from .services import register_user
 
 __all__ = ('AuthenticateInput', 'Authenticate', 'RefreshAnonymousUser')
 
@@ -86,3 +87,24 @@ class RefreshAnonymousUser(model.Mutation):
             'token': token,
             'user': user
         }
+
+
+class RegisterInput(model.Type):
+    email = model.EmailField()
+    password = model.PasswordField()
+    password_confirmation = model.PasswordField()
+
+    class Meta:
+        input = True
+
+
+class Register(model.Mutation):
+    input = RegisterInput
+    returns = JWTType
+
+    def resolve(self, ctx):
+        input = ctx.parse_input()
+        email = input['email']
+        password = input['password']
+        password_confirmation = input['password_confirmation']
+        return register_user(email, password, password_confirmation, selector=ctx.selector)

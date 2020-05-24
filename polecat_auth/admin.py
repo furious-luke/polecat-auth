@@ -1,9 +1,9 @@
 from polecat.auth import jwt
 from polecat.admin.command import Command
 from polecat.model.db import Q, S
-from polecat.db.connection import transaction
 
-from .models import Entity, User, Organisation, Membership, APIToken
+from .models import Entity, User, Organisation, APIToken
+from .services import create_user
 
 
 class CreateUser(Command):
@@ -16,42 +16,7 @@ class CreateUser(Command):
         )
 
     def run(self, email, password=None, name=None, organisation=None):
-        with transaction():
-            user_id = (
-                Q(User)
-                .insert(
-                    email=email,
-                    password=password,
-                    name=name,
-                    entity=Q(Entity).insert().select('id')
-                )
-                .select('id')
-                .get()
-            )['id']
-            if organisation is not None:
-                org = (
-                    Q(Organisation)
-                    .insert_if_missing({'name': organisation})
-                    .select('id', 'entity')
-                    .get()
-                )
-                if not org['entity']:
-                    (
-                        Q(Organisation)
-                        .filter(id=org['id'])
-                        .update(entity=Q(Entity).insert())
-                        .execute()
-                    )
-                # TODO: Update "active" to be a query against other actives.
-                (
-                    Q(Membership)
-                    .insert(
-                        user=user_id,
-                        organisation=org['id'],
-                        active=True
-                    )
-                    .execute()
-                )
+        create_user(email, password=password, name=name, organisation=organisation)
 
 
 class CreateOrganisation(Command):
