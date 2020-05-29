@@ -11,7 +11,8 @@ class Entity(model.Model):
     polymorphic relationships, especially with regard to ownership of
     objects, and RLS.
     """
-    pass
+    class Meta:
+        plural = 'Entities'
 
 
 class User(model.Model):

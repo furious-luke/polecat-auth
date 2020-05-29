@@ -61,6 +61,10 @@ class RefreshAnonymousUser(model.Mutation):
             token = input['token']
             claims = jwt_decode(token)
             query = Q(User).filter(id=claims['user_id'])
+            # TODO: This is a little inefficient, but is needed to
+            # confirm the user actually exists.
+            if query.select('id').get() is None:
+                raise Exception
         except Exception:
             # TODO: Check more.
             # TODO: These should be composable, but the nested select
