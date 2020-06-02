@@ -97,6 +97,7 @@ class RegisterInput(model.Type):
     email = model.EmailField()
     password = model.PasswordField()
     password_confirmation = model.PasswordField()
+    token = model.TextField()
 
     class Meta:
         input = True
@@ -111,4 +112,5 @@ class Register(model.Mutation):
         email = input['email']
         password = input['password']
         password_confirmation = input['password_confirmation']
-        return register_user(email, password, password_confirmation, selector=ctx.selector)
+        token = input.get('token')
+        return register_user(email, password, password_confirmation, token=token, selector=ctx.selector)

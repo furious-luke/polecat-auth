@@ -1,19 +1,34 @@
 from polecat.model.db import Q, S
 from polecat.db.connection import transaction
-from polecat.auth import jwt
+from polecat.auth import jwt, jwt_decode
 
 from .models import Entity, User, Organisation, Membership
 
 
-def register_user(email, password, password_confirmation, selector=None):
+def register_user(email, password, password_confirmation, token=None, selector=None):
     if password != password_confirmation:
         raise Exception('Passwords don\'t match')
     selector = selector or S()
-    user = create_user(
-        email,
-        password=password,
-        selector=(selector.get('user') or S()).merge(S(entity=S('id')))
-    )
+    if token:
+        claims = jwt_decode(token)
+        try:
+            user = Q(User).filter(id=claims['user_id']).select('id', 'email').get()
+            if user['email']:
+                raise Exception('Cannot register existing user')
+        except (KeyError, AttributeError):
+            raise Exception('Invalid token for user registration')
+        user = upgrade_user(
+            user['id'],
+            email,
+            password,
+            selector=(selector.get('user') or S()).merge(S(entity=S('id')))
+        )
+    else:
+        user = create_user(
+            email,
+            password=password,
+            selector=(selector.get('user') or S()).merge(S(entity=S('id')))
+        )
     token = jwt({
         'user_id': user['id'],
         'entity_id': user['entity']['id'],
@@ -67,3 +82,17 @@ def create_user(email, password=None, name=None, organisation=None, selector=Non
                 .execute()
             )
         return user
+
+
+def upgrade_user(user_id, email, password, selector=None):
+    user = (
+        Q(User)
+        .filter(id=user_id)
+        .update(
+            email=email,
+            password=password
+        )
+        .select(S('id').merge(selector))
+        .get()
+    )
+    return user
