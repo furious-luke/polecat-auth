@@ -2,7 +2,7 @@ import os
 
 from setuptools import find_packages, setup
 
-version = '0.0.0'
+version = '0.0.1'
 
 setup(
     name='polecat-auth',
@@ -27,7 +27,10 @@ setup(
     packages=find_packages(exclude=['tests', 'extern']),
     include_package_data=True,
     package_data={'': ['*.txt', '*.js', '*.html', '*.*']},
-    install_requires=[],
+    install_requires=[
+        'polecat',
+        'pytest-polecat'
+    ],
     extras_require={},
     entry_points={},
     zip_safe=True
